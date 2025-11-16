@@ -1,73 +1,227 @@
-# Welcome to your Lovable project
+# 🎓 Telegram Mini App "Лицей №1"
 
-## Project info
+Полнофункциональная платформа для образовательного учреждения с системой ролей, расписанием, спецкурсами и профильным тестированием.
 
-**URL**: https://lovable.dev/projects/fd338275-eef8-485e-9c72-1420f63d4444
+## 🚀 Быстрый Старт
 
-## How can I edit this code?
+### 1. Создайте Telegram Бота
+```bash
+# Откройте @BotFather в Telegram
+# Создайте нового бота: /newbot
+# Сохраните токен бота
+```
 
-There are several ways of editing your application.
+### 2. Разверните Проект
+**Вариант A: Lovable Cloud (Рекомендуется)**
+1. Нажмите **"Publish"** в Lovable
+2. Добавьте секрет `TELEGRAM_BOT_TOKEN` в Cloud → Secrets
+3. Добавьте секрет `ADMIN_SECRET_KEY` (сгенерируйте: `openssl rand -hex 32`)
 
-**Use Lovable**
+**Вариант B: Self-Hosted**
+```bash
+# Установите Supabase CLI
+npm install -g supabase
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fd338275-eef8-485e-9c72-1420f63d4444) and start prompting.
+# Запустите локально
+supabase start
+supabase db reset
+supabase functions serve
 
-Changes made via Lovable will be committed automatically to this repo.
+# Или разверните на продакшн
+supabase link --project-ref <your-project>
+supabase db push
+supabase functions deploy
+```
 
-**Use your preferred IDE**
+### 3. Настройте Webhook
+```bash
+curl -X POST https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/telegram-webhook"}'
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 4. Назначьте Первого Администратора
+```bash
+curl -X POST https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/set-admin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "telegram_id": 123456789,
+    "secret_key": "your-admin-secret-key"
+  }'
+```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**Как узнать свой Telegram ID:**
+1. Напишите боту [@userinfobot](https://t.me/userinfobot)
+2. Скопируйте значение `Id`
 
-Follow these steps:
+## 📚 Полная Документация
 
+Подробная инструкция по развертыванию: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+Включает:
+- ✅ Пошаговое развертывание на Lovable Cloud и Self-Hosted Supabase
+- ✅ Настройка Telegram Bot и Mini App
+- ✅ CLI команды для администрирования
+- ✅ Безопасность и верификация initData
+- ✅ Troubleshooting распространенных проблем
+
+## 🏗️ Архитектура
+
+```
+┌─────────────────┐         ┌──────────────────┐
+│  Telegram Bot   │────────▶│  Edge Function   │
+│   (Webhook)     │         │ telegram-webhook │
+└─────────────────┘         └──────────────────┘
+                                     │
+                                     ▼
+┌─────────────────┐         ┌──────────────────┐
+│ Telegram Mini   │────────▶│  Edge Function   │
+│      App        │         │ verify-init-data │
+└─────────────────┘         └──────────────────┘
+                                     │
+                                     ▼
+┌─────────────────┐         ┌──────────────────┐
+│   CLI Admin     │────────▶│  Edge Function   │
+│   Commands      │         │    set-admin     │
+└─────────────────┘         └──────────────────┘
+                                     │
+                                     ▼
+                            ┌──────────────────┐
+                            │   PostgreSQL     │
+                            │  + RLS Policies  │
+                            └──────────────────┘
+```
+
+## 🔐 Система Ролей
+
+| Роль | Права доступа |
+|------|--------------|
+| **Admin** | Полное управление системой, создание тестов, управление пользователями |
+| **Teacher** | Управление спецкурсами, просмотр расписания, отправка уведомлений |
+| **Student** | Запись на спецкурсы, прохождение тестов, просмотр расписания |
+| **Parent** | Мониторинг ребенка, просмотр результатов тестов |
+
+## 🛡️ Безопасность
+
+- ✅ **Криптографическая верификация** Telegram initData
+- ✅ **Row-Level Security (RLS)** на всех таблицах
+- ✅ **HTTPS только** для всех API запросов
+- ✅ **Секреты** хранятся в Supabase Secrets (не в коде)
+- ✅ **Security Definer Functions** для проверки ролей
+
+## 📦 Основные Функции
+
+### Для Учителей
+- 📅 Персональное расписание
+- 📚 Создание и управление спецкурсами
+- 📨 Отправка уведомлений классу
+- 🤖 LLM-помощник для генерации материалов
+
+### Для Учеников
+- 📅 Просмотр расписания
+- 📝 Запись на спецкурсы
+- 🎯 Прохождение профильных тестов
+- 💬 LLM-помощник для учебы
+
+### Для Родителей
+- 👀 Мониторинг расписания ребенка
+- 📊 Результаты профильного тестирования
+- 📞 Связь с классным руководителем
+- ❓ LLM-FAQ о школе
+
+### Для Администраторов
+- 👥 Управление пользователями и ролями
+- 🏫 CRUD классов и расписания
+- 📋 Создание профильных тестов
+- 📊 Просмотр статистики
+- 📤 Импорт/Экспорт данных (CSV)
+
+## 🔧 CLI Команды
+
+### Назначение Администратора
+```bash
+# Через curl
+curl -X POST <YOUR_SUPABASE_URL>/functions/v1/set-admin \
+  -H "Content-Type: application/json" \
+  -d '{"telegram_id": 123456789, "secret_key": "your-secret"}'
+
+# Через Node.js
+node cli-set-admin.js 123456789
+```
+
+### Проверка Webhook
+```bash
+# Статус webhook
+curl https://api.telegram.org/bot<TOKEN>/getWebhookInfo
+
+# Логи Edge Function
+# В Lovable: Cloud → Functions → Logs
+```
+
+## 🐛 Troubleshooting
+
+**Webhook не работает?**
+```bash
+curl https://api.telegram.org/bot<TOKEN>/deleteWebhook
+curl -X POST https://api.telegram.org/bot<TOKEN>/setWebhook \
+  -d url=https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/telegram-webhook
+```
+
+**initData верификация не проходит?**
+- Убедитесь, что `TELEGRAM_BOT_TOKEN` установлен
+- Откройте Mini App **через Telegram** (не через браузер)
+
+**Пользователь не может войти?**
+```sql
+-- Проверьте в базе данных
+SELECT * FROM profiles WHERE telegram_id = <TELEGRAM_ID>;
+```
+
+Полный список проблем и решений: **[DEPLOYMENT.md#troubleshooting](./DEPLOYMENT.md#troubleshooting)**
+
+## 📖 Технологии
+
+- **Frontend**: React, TypeScript, Tailwind CSS, Vite
+- **Backend**: Supabase Edge Functions (Deno)
+- **Database**: PostgreSQL с Row-Level Security
+- **Auth**: Telegram WebApp initData криптография
+- **Deployment**: Lovable Cloud (Supabase)
+
+## 📞 Поддержка
+
+- [Telegram Bot API Docs](https://core.telegram.org/bots/api)
+- [Telegram Mini Apps Docs](https://core.telegram.org/bots/webapps)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Lovable Cloud Docs](https://docs.lovable.dev/features/cloud)
+
+---
+
+## 🛠️ Разработка
+
+### Локальная разработка
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Клонируйте репозиторий
 git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Установите зависимости
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Запустите dev-сервер
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
+### Развертывание
 Simply open [Lovable](https://lovable.dev/projects/fd338275-eef8-485e-9c72-1420f63d4444) and click on Share -> Publish.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
+### Кастомный домен
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## 📄 Лицензия
+
+MIT License
+
+---
+
+**Сделано с ❤️ для образовательных учреждений**
