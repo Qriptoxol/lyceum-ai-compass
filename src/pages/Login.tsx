@@ -1,30 +1,39 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { GraduationCap } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { GraduationCap, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user, loading, signInWithTelegram } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Placeholder authentication
-    toast({
-      title: isLogin ? "Вход выполнен" : "Регистрация завершена",
-      description: "Добро пожаловать в систему Лицей №1",
-    });
-    
-    navigate("/");
-  };
+  useEffect(() => {
+    if (user) {
+      // Redirect based on role
+      if (user.roles.includes('teacher')) {
+        navigate('/teacher');
+      } else if (user.roles.includes('student')) {
+        navigate('/student');
+      } else if (user.roles.includes('parent')) {
+        navigate('/parent');
+      } else {
+        navigate('/');
+      }
+    } else if (!loading && !window.Telegram?.WebApp) {
+      // Auto-initialize Telegram WebApp
+      signInWithTelegram();
+    }
+  }, [user, loading, navigate, signInWithTelegram]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4">
@@ -39,54 +48,20 @@ const Login = () => {
           </CardTitle>
           
           <CardDescription className="text-base">
-            {isLogin ? "Войдите в свой аккаунт" : "Создайте новый аккаунт"}
+            Авторизация через Telegram
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="transition-all duration-300 focus:shadow-soft"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="transition-all duration-300 focus:shadow-soft"
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
-            >
-              {isLogin ? "Войти" : "Зарегистрироваться"}
-            </Button>
-            
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => setIsLogin(!isLogin)}
-            >
-              {isLogin ? "Нет аккаунта? Зарегистрируйтесь" : "Уже есть аккаунт? Войдите"}
-            </Button>
-          </form>
+        <CardContent className="text-center space-y-4">
+          <p className="text-muted-foreground">
+            Откройте приложение через Telegram Mini App
+          </p>
+          <Button 
+            onClick={signInWithTelegram}
+            className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300"
+          >
+            Войти через Telegram
+          </Button>
         </CardContent>
       </Card>
     </div>
