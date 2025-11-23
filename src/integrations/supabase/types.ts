@@ -14,76 +14,299 @@ export type Database = {
   }
   public: {
     Tables: {
-      classes: {
+      admin_users: {
         Row: {
           created_at: string
-          grade: number
+          full_name: string | null
           id: string
-          name: string
-          profile_type: string | null
-          teacher_id: string | null
+          is_active: boolean | null
+          last_login: string | null
+          password_hash: string
+          username: string
         }
         Insert: {
           created_at?: string
-          grade: number
+          full_name?: string | null
           id?: string
-          name: string
-          profile_type?: string | null
-          teacher_id?: string | null
+          is_active?: boolean | null
+          last_login?: string | null
+          password_hash: string
+          username: string
         }
         Update: {
           created_at?: string
-          grade?: number
+          full_name?: string | null
           id?: string
-          name?: string
-          profile_type?: string | null
-          teacher_id?: string | null
+          is_active?: boolean | null
+          last_login?: string | null
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      chat_history: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          response: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          response: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          response?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "classes_teacher_id_fkey"
-            columns: ["teacher_id"]
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      course_enrollments: {
+      event_participants: {
         Row: {
-          course_id: string
-          enrolled_at: string
+          event_id: string
           id: string
-          student_id: string
+          joined_at: string
+          user_id: string
         }
         Insert: {
-          course_id: string
-          enrolled_at?: string
+          event_id: string
           id?: string
-          student_id: string
+          joined_at?: string
+          user_id: string
         }
         Update: {
-          course_id?: string
-          enrolled_at?: string
+          event_id?: string
           id?: string
-          student_id?: string
+          joined_at?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "course_enrollments_course_id_fkey"
-            columns: ["course_id"]
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "special_courses"
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "course_enrollments_student_id_fkey"
-            columns: ["student_id"]
+            foreignKeyName: "event_participants_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_templates: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          required_channel_subscribers: number | null
+          required_participants: number | null
+          reward_description: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          required_channel_subscribers?: number | null
+          required_participants?: number | null
+          reward_description?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          required_channel_subscribers?: number | null
+          required_participants?: number | null
+          reward_description?: string | null
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          channel_url: string | null
+          created_at: string
+          current_participants: number | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          start_date: string | null
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          channel_url?: string | null
+          created_at?: string
+          current_participants?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          start_date?: string | null
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          channel_url?: string | null
+          created_at?: string
+          current_participants?: number | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          start_date?: string | null
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "event_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_base: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news: {
+        Row: {
+          category_id: string | null
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_published: boolean | null
+          published_at: string | null
+          summary: string | null
+          target_role: Database["public"]["Enums"]["app_role"] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          published_at?: string | null
+          summary?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          published_at?: string | null
+          summary?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "news_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -91,6 +314,8 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          registration_completed: boolean | null
+          selected_role: Database["public"]["Enums"]["app_role"] | null
           telegram_id: number
           updated_at: string
         }
@@ -99,6 +324,8 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          registration_completed?: boolean | null
+          selected_role?: Database["public"]["Enums"]["app_role"] | null
           telegram_id: number
           updated_at?: string
         }
@@ -107,189 +334,48 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          registration_completed?: boolean | null
+          selected_role?: Database["public"]["Enums"]["app_role"] | null
           telegram_id?: number
           updated_at?: string
         }
         Relationships: []
       }
-      schedules: {
+      user_preferences: {
         Row: {
-          class_id: string
+          category_id: string
           created_at: string
-          day_of_week: number
           id: string
-          room: string | null
-          subject: string
-          teacher_id: string | null
-          time_end: string
-          time_start: string
+          user_id: string
         }
         Insert: {
-          class_id: string
+          category_id: string
           created_at?: string
-          day_of_week: number
           id?: string
-          room?: string | null
-          subject: string
-          teacher_id?: string | null
-          time_end: string
-          time_start: string
+          user_id: string
         }
         Update: {
-          class_id?: string
+          category_id?: string
           created_at?: string
-          day_of_week?: number
           id?: string
-          room?: string | null
-          subject?: string
-          teacher_id?: string | null
-          time_end?: string
-          time_start?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "schedules_class_id_fkey"
-            columns: ["class_id"]
+            foreignKeyName: "user_preferences_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
-            referencedRelation: "classes"
+            referencedRelation: "news_categories"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "schedules_teacher_id_fkey"
-            columns: ["teacher_id"]
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
-      }
-      special_courses: {
-        Row: {
-          created_at: string
-          description: string | null
-          end_date: string | null
-          id: string
-          is_published: boolean | null
-          max_students: number | null
-          schedule_info: string | null
-          start_date: string | null
-          teacher_id: string
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          is_published?: boolean | null
-          max_students?: number | null
-          schedule_info?: string | null
-          start_date?: string | null
-          teacher_id: string
-          title: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          end_date?: string | null
-          id?: string
-          is_published?: boolean | null
-          max_students?: number | null
-          schedule_info?: string | null
-          start_date?: string | null
-          teacher_id?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "special_courses_teacher_id_fkey"
-            columns: ["teacher_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      test_results: {
-        Row: {
-          answers: Json
-          completed_at: string
-          id: string
-          passed: boolean
-          score: number
-          student_id: string
-          test_id: string
-        }
-        Insert: {
-          answers: Json
-          completed_at?: string
-          id?: string
-          passed: boolean
-          score: number
-          student_id: string
-          test_id: string
-        }
-        Update: {
-          answers?: Json
-          completed_at?: string
-          id?: string
-          passed?: boolean
-          score?: number
-          student_id?: string
-          test_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "test_results_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "test_results_test_id_fkey"
-            columns: ["test_id"]
-            isOneToOne: false
-            referencedRelation: "tests"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tests: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          is_active: boolean | null
-          passing_score: number
-          profile_type: string
-          questions: Json
-          target_grade: number
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          passing_score: number
-          profile_type: string
-          questions: Json
-          target_grade: number
-          title: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          passing_score?: number
-          profile_type?: string
-          questions?: Json
-          target_grade?: number
-          title?: string
-        }
-        Relationships: []
       }
       user_roles: {
         Row: {

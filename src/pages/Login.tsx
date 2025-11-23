@@ -11,18 +11,8 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      // Redirect based on role
-      if (user.roles.includes('teacher')) {
-        navigate('/teacher');
-      } else if (user.roles.includes('student')) {
-        navigate('/student');
-      } else if (user.roles.includes('parent')) {
-        navigate('/parent');
-      } else {
-        navigate('/');
-      }
+      navigate('/news');
     } else if (!loading && !window.Telegram?.WebApp) {
-      // Auto-initialize Telegram WebApp
       signInWithTelegram();
     }
   }, [user, loading, navigate, signInWithTelegram]);
