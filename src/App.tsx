@@ -8,9 +8,10 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import Teacher from "./pages/Teacher";
-import Student from "./pages/Student";
-import Parent from "./pages/Parent";
+import News from "./pages/News";
+import Events from "./pages/Events";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -25,29 +26,23 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route
-              path="/teacher"
+              path="/news"
               element={
-                <ProtectedRoute requiredRole="teacher">
-                  <Teacher />
+                <ProtectedRoute>
+                  <News />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/student"
+              path="/events"
               element={
-                <ProtectedRoute requiredRole="student">
-                  <Student />
+                <ProtectedRoute>
+                  <Events />
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/parent"
-              element={
-                <ProtectedRoute requiredRole="parent">
-                  <Parent />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
