@@ -78,6 +78,11 @@ async function answerCallbackQuery(callbackQueryId: string, text?: string) {
 }
 
 async function getRAGResponse(userId: string, question: string): Promise<string> {
+  // Validate input length to prevent abuse
+  if (question.length > 1000) {
+    return 'Вопрос слишком длинный. Пожалуйста, задайте более короткий вопрос.';
+  }
+
   // Get chat history
   const { data: history } = await supabase
     .from('chat_history')
@@ -121,6 +126,12 @@ ${chatContext}
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return 'Превышен лимит запросов. Пожалуйста, попробуйте позже.';
+      }
+      if (response.status === 402) {
+        return 'Сервис временно недоступен. Обратитесь к администратору.';
+      }
       console.error('AI API error:', response.status);
       return 'Извините, не могу ответить на вопрос в данный момент.';
     }

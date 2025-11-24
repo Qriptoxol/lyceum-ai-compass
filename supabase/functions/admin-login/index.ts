@@ -5,6 +5,19 @@ import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+};
+
+// Simple rate limiting store (in production use Redis or similar)
+const loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+
+const RATE_LIMIT = {
+  MAX_ATTEMPTS: 5,
+  WINDOW_MS: 15 * 60 * 1000, // 15 minutes
+  LOCKOUT_MS: 30 * 60 * 1000, // 30 minutes after max attempts
 };
 
 serve(async (req) => {
@@ -14,6 +27,43 @@ serve(async (req) => {
 
   try {
     const { username, password } = await req.json();
+
+    // Input validation
+    if (!username || !password) {
+      return new Response(
+        JSON.stringify({ error: 'Имя пользователя и пароль обязательны' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (username.length > 100 || password.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Неверные учетные данные' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting check
+    const now = Date.now();
+    const attempts = loginAttempts.get(username);
+    
+    if (attempts) {
+      if (attempts.count >= RATE_LIMIT.MAX_ATTEMPTS) {
+        const timeSinceLastAttempt = now - attempts.lastAttempt;
+        if (timeSinceLastAttempt < RATE_LIMIT.LOCKOUT_MS) {
+          const remainingMinutes = Math.ceil((RATE_LIMIT.LOCKOUT_MS - timeSinceLastAttempt) / 60000);
+          return new Response(
+            JSON.stringify({ 
+              error: `Слишком много попыток входа. Попробуйте снова через ${remainingMinutes} минут.` 
+            }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          // Reset after lockout period
+          loginAttempts.delete(username);
+        }
+      }
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -29,6 +79,13 @@ serve(async (req) => {
       .single();
 
     if (error || !admin) {
+      // Increment failed attempts
+      const currentAttempts = loginAttempts.get(username) || { count: 0, lastAttempt: now };
+      loginAttempts.set(username, {
+        count: currentAttempts.count + 1,
+        lastAttempt: now,
+      });
+
       return new Response(
         JSON.stringify({ error: 'Неверный логин или пароль' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -39,11 +96,21 @@ serve(async (req) => {
     const valid = await bcrypt.compare(password, admin.password_hash);
 
     if (!valid) {
+      // Increment failed attempts
+      const currentAttempts = loginAttempts.get(username) || { count: 0, lastAttempt: now };
+      loginAttempts.set(username, {
+        count: currentAttempts.count + 1,
+        lastAttempt: now,
+      });
+
       return new Response(
         JSON.stringify({ error: 'Неверный логин или пароль' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Clear failed attempts on successful login
+    loginAttempts.delete(username);
 
     // Update last login
     await supabase
