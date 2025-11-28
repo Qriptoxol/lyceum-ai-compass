@@ -173,16 +173,30 @@ supabase functions list
 
 ## Шаг 6: Создание первого администратора
 
-### 6.1 Используя CLI скрипт
+### 6.1 Для веб-админ-панели (рекомендуется)
 
 ```bash
-# Создать админского пользователя
-node cli-create-admin.js admin_username secure_password "Администратор Иванов"
+# Создать учетную запись администратора
+node cli-create-first-admin.js admin SecurePassword123! "Главный Администратор"
 ```
 
-### 6.2 Через Edge Function
+Скрипт запросит `ADMIN_SECRET_KEY`. После успешного создания вы можете войти в админ-панель по адресу: `http://localhost:5173/admin/login`
+
+### 6.2 Для пользователя Telegram
 
 ```bash
+# Назначить роль admin существующему пользователю Telegram
+node cli-set-admin.js 123456789
+```
+
+**Как узнать Telegram ID:**
+1. Напишите боту [@userinfobot](https://t.me/userinfobot)
+2. Скопируйте значение `Id`
+
+### 6.3 Через Edge Function (альтернатива)
+
+```bash
+# Создать через API
 curl -X POST "http://localhost:54321/functions/v1/create-admin" \
   -H "Content-Type: application/json" \
   -d '{
