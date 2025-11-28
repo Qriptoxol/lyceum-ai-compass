@@ -226,7 +226,44 @@ profile - Мой профиль
 
 ## 🛠️ CLI Команды
 
-### Назначение Первого Администратора
+### Создание Первого Администратора
+
+#### Вариант 1: Для веб-админ-панели (рекомендуется)
+
+**Через Node.js скрипт:**
+```bash
+node cli-create-first-admin.js admin SecurePassword123! "Главный Администратор"
+```
+
+Скрипт запросит `ADMIN_SECRET_KEY`, который вы установили в настройках проекта.
+
+После успешного создания войдите в админ-панель:
+- **URL**: `https://your-project.lovable.app/admin/login`
+- **Username**: `admin`
+- **Password**: `SecurePassword123!`
+
+**Через curl:**
+```bash
+curl -X POST https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/create-admin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "SecurePassword123!",
+    "full_name": "Главный Администратор",
+    "secret_key": "your-super-secret-admin-key"
+  }'
+```
+
+#### Вариант 2: Назначение роли admin пользователю Telegram
+
+**Через Node.js скрипт:**
+```bash
+node cli-set-admin.js 123456789
+```
+
+**Как узнать свой Telegram ID:**
+1. Напишите боту [@userinfobot](https://t.me/userinfobot)
+2. Скопируйте значение `Id`
 
 **Через curl:**
 ```bash
@@ -236,35 +273,6 @@ curl -X POST https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/set-admin \
     "telegram_id": 123456789,
     "secret_key": "your-super-secret-admin-key"
   }'
-```
-
-**Через Node.js скрипт:**
-```javascript
-// cli-set-admin.js
-const SUPABASE_FUNCTIONS_URL = 'https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1';
-const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'your-super-secret-admin-key';
-
-async function setAdmin(telegramId) {
-  const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/set-admin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      telegram_id: parseInt(telegramId),
-      secret_key: ADMIN_SECRET_KEY,
-    }),
-  });
-
-  const result = await response.json();
-  console.log(result);
-}
-
-// Использование: node cli-set-admin.js 123456789
-setAdmin(process.argv[2]);
-```
-
-**Запуск:**
-```bash
-node cli-set-admin.js 123456789
 ```
 
 ### Проверка Статуса

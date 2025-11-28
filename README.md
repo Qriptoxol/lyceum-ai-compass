@@ -33,26 +33,29 @@ supabase db push
 supabase functions deploy
 ```
 
-### 3. Настройте Webhook
+### 3. Создайте Первого Администратора
+
+**Для веб-админ-панели:**
+```bash
+node cli-create-first-admin.js admin SecurePassword123! "Главный администратор"
+```
+Скрипт запросит `ADMIN_SECRET_KEY`. После создания войдите в админ-панель: `/admin/login`
+
+**Для пользователя Telegram:**
+```bash
+node cli-set-admin.js 123456789
+```
+Узнать Telegram ID: [@userinfobot](https://t.me/userinfobot)
+
+### 4. Настройте Webhook
 ```bash
 curl -X POST https://api.telegram.org/bot<YOUR_TOKEN>/setWebhook \
   -H "Content-Type: application/json" \
   -d '{"url": "https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/telegram-webhook"}'
 ```
 
-### 4. Назначьте Первого Администратора
-```bash
-curl -X POST https://yffdyyjugrzyqdvtjnho.supabase.co/functions/v1/set-admin \
-  -H "Content-Type: application/json" \
-  -d '{
-    "telegram_id": 123456789,
-    "secret_key": "your-admin-secret-key"
-  }'
-```
-
-**Как узнать свой Telegram ID:**
-1. Напишите боту [@userinfobot](https://t.me/userinfobot)
-2. Скопируйте значение `Id`
+### 5. Настройте Telegram Mini App
+См. полную документацию: **[DEPLOYMENT.md](./DEPLOYMENT.md)**
 
 ## 📚 Полная Документация
 
